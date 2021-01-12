@@ -3,7 +3,7 @@ By Al Sweigart al@inventwithpython.com
 
 Additional boolean values: KindaTrue, KindaFalse, VeryTrue, and VeryFalse. (This is a joke project.)"""
 
-__version__ = '0.1.0'
+__version__ = '0.1.1'
 
 import random, sys
 
