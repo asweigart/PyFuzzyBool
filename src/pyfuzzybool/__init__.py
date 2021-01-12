@@ -5,7 +5,12 @@ Additional boolean values: KindaTrue, KindaFalse, VeryTrue, and VeryFalse. (This
 
 __version__ = '0.1.0'
 
-import random
+import random, sys
+
+try:
+    MAX_INT = sys.maxint
+except AttributeError:
+    MAX_INT = sys.maxsize
 
 class _kindatrue:
     def __init__(self):
@@ -15,12 +20,12 @@ class _kindafalse:
     def __init__(self):
         raise Exception('Instantiating _kindatrue is not allowed, probably.')
 
-_KINDA_TRUE = 0
-_KINDA_FALSE = 1
-_VERY_TRUE = 2
-_VERY_FALSE = 3
+_VERY_FALSE = 0
+_FALSE = 1
+_KINDA_FALSE = 2
+_KINDA_TRUE = 3
 _TRUE = 4
-_FALSE = 5
+_VERY_TRUE = 5
 
 class fuzzybool:
     def __init__(self, value=None, **kwargs):
@@ -100,17 +105,17 @@ class fuzzybool:
 
     def __repr__(self):
         if self._fuzzyVal == _KINDA_TRUE:
-            return "fuzzybool(fuzzyValue='KindaTrue')"
+            return 'KindaTrue'
         elif self._fuzzyVal == _KINDA_FALSE:
-            return "fuzzybool(fuzzyValue='KindaFalse')"
+            return 'KindaFalse'
         elif self._fuzzyVal == _VERY_TRUE:
-            return "fuzzybool(fuzzyValue='VeryTrue')"
+            return 'VeryTrue'
         elif self._fuzzyVal == _VERY_FALSE:
-            return "fuzzybool(fuzzyValue='VeryFalse')"
+            return 'VeryFalse'
         elif self._fuzzyVal == _TRUE:
-            return "fuzzybool(fuzzyValue='True')"
+            return 'fuzzybool(True)'
         elif self._fuzzyVal == _FALSE:
-            return "fuzzybool(fuzzyValue='False')"
+            return 'fuzzybool(False)'
 
 
     def __eq__(self, other):
@@ -120,12 +125,90 @@ class fuzzybool:
                 return True
             return self._fuzzyVal == other._fuzzyVal
 
+        if self._fuzzyVal == _VERY_TRUE and bool(other) == True:
+            return True
+        if self._fuzzyVal == _VERY_FALSE and bool(other) == False:
+            return True
+
         # Handle all other types for `other`:
         return self._fuzzyVal == fuzzybool(other)._fuzzyVal
 
 
+    def __lt__(self, other):
+        # Handle if `other` is also a fuzzybool:
+        if issubclass(type(other), type(self)):
+            if (self._fuzzyVal == _KINDA_TRUE or self._fuzzyVal == _KINDA_FALSE) and (other._fuzzyVal == _KINDA_TRUE or other._fuzzyVal == _KINDA_FALSE):
+                return False
+            return self._fuzzyVal < other._fuzzyVal
+
+        # Handle all other types for `other`:
+        return float(self) < other
+
+
+    def __gt__(self, other):
+        # Handle if `other` is also a fuzzybool:
+        if issubclass(type(other), type(self)):
+            if (self._fuzzyVal == _KINDA_TRUE or self._fuzzyVal == _KINDA_FALSE) and (other._fuzzyVal == _KINDA_TRUE or other._fuzzyVal == _KINDA_FALSE):
+                return False
+            return self._fuzzyVal > other._fuzzyVal
+
+        # Handle all other types for `other`:
+        return float(self) > other
+
+
+    def __le__(self, other):
+        # Handle if `other` is also a fuzzybool:
+        if issubclass(type(other), type(self)):
+            if (self._fuzzyVal == _KINDA_TRUE or self._fuzzyVal == _KINDA_FALSE) and (other._fuzzyVal == _KINDA_TRUE or other._fuzzyVal == _KINDA_FALSE):
+                return True
+            return self._fuzzyVal < other._fuzzyVal
+
+        # Handle all other types for `other`:
+        return float(self) < other
+
+
+    def __ge__(self, other):
+        # Handle if `other` is also a fuzzybool:
+        if issubclass(type(other), type(self)):
+            if (self._fuzzyVal == _KINDA_TRUE or self._fuzzyVal == _KINDA_FALSE) and (other._fuzzyVal == _KINDA_TRUE or other._fuzzyVal == _KINDA_FALSE):
+                return True
+            return self._fuzzyVal > other._fuzzyVal
+
+        # Handle all other types for `other`:
+        return float(self) > other
+
+
     def __hash__(self):
-        return self._fuzzyVal
+        return self._fuzzyVal  # TODO fix
+
+
+    def __float__(self):
+        if self._fuzzyVal == _TRUE:
+            return 1.0
+        elif self._fuzzyVal == _FALSE:
+            return 0.0
+        elif self._fuzzyVal == _KINDA_TRUE or self._fuzzyVal == _KINDA_FALSE:
+            return random.random() + 0.0000000000000001
+        elif self._fuzzyVal == _VERY_TRUE:
+            return random.randint(1, MAX_INT) + random.random()
+        elif self._fuzzyVal == _VERY_FALSE:
+            return -(random.randint(1, MAX_INT) + random.random())
+
+
+    def __int__(self):
+        if self._fuzzyVal == _TRUE:
+            return 1
+        elif self._fuzzyVal == _FALSE:
+            return 0
+        elif self._fuzzyVal == _KINDA_TRUE or self._fuzzyVal == _KINDA_FALSE:
+            return random.randint(0, 1)
+        elif self._fuzzyVal == _VERY_TRUE:
+            return random.randint(1, MAX_INT)
+        elif self._fuzzyVal == _VERY_FALSE:
+            return -(random.randint(1, MAX_INT))
+
+
+
 
 
 
